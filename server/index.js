@@ -5,12 +5,34 @@ const io = require('socket.io')(server, {
 });
 const pm2 = require('pm2');
 const ms = require('ms');
-const port = 5000;
+const port = 5100;
+const passw = 'something';
+const errLs = {};
+const logLs = {};
 
 pm2.connect((err) => {
 	if (err) {
 		console.error(err);
 	}
+	pm2.launchBus((err, bus) => {
+		if (err) {
+			console.error(err);
+		}
+		bus.on('log:err', (err) => {
+			for (i in errLs) {
+				if (err.process.pm_id.toString() === errLs[i].toString()) {
+					io.to(i).emit('addErr', err.data);
+				}
+			}
+		});
+		bus.on('log:out', (msg) => {
+			for (i in logLs) {
+				if (msg.process.pm_id.toString() === logLs[i].toString()) {
+					io.to(i).emit('addLog', msg.data);
+				}
+			}
+		});
+	});
 });
 
 function refresh(socket) {
@@ -24,7 +46,7 @@ function refresh(socket) {
 				id: process.pm_id,
 				uptime: ms(Date.now() - process.pm2_env.pm_uptime),
 				status: process.pm2_env.status,
-				cpu: process.monit.cpu + "%",
+				cpu: process.monit.cpu + '%',
 				mem: (process.monit.memory / 1024 ** 2).toFixed(1) + 'mb',
 				user: process.pm2_env.username,
 			};
@@ -35,14 +57,31 @@ function refresh(socket) {
 
 io.on('connection', (socket) => {
 	console.log('Client connected');
-	const interval = setInterval(() => {
-		try {
-			refresh(socket);
-		} catch (e) {
-			console.error(e);
-			clearInterval(interval);
+	socket.on('auth', (data) => {
+		if (data === passw) {
+			socket.emit('authRet', true);
+			const interval = setInterval(() => {
+				try {
+					refresh(socket);
+				} catch (e) {
+					console.error(e);
+					clearInterval(interval);
+				}
+			}, 5000);
+		} else {
+			socket.emit('authRet', false);
 		}
-	}, 5000);
+	});
+	socket.on('createErrLs', (data) => {
+		errLs[socket.id] = data.id;
+	});
+	socket.on('createLogLs', (data) => {
+		logLs[socket.id] = data.id;
+	});
+	socket.on('disconnect', () => {
+		delete errLs[socket.id];
+		delete logLs[socket.id];
+	});
 });
 
 server.listen(port, () => {

@@ -19,6 +19,14 @@
 			loading-text="Loading... Please wait"
 			:search="search"
 			disable-sort
+			single-expand
+			:expanded.sync="expanded"
+			@click:row="
+				(data) =>
+					expanded.length === 1 && expanded[0].id === data.id
+						? (expanded = [])
+						: (expanded = [data])
+			"
 		>
 			<template v-slot:top>
 				<v-text-field
@@ -26,6 +34,39 @@
 					label="Search for a process"
 					class="mx-4"
 				></v-text-field>
+			</template>
+			<template v-slot:expanded-item="{ headers, item }">
+				<td :colspan="headers.length">
+					<br />
+
+					<v-btn
+						:disabled="item.status === 'online'"
+						color="primary"
+						small
+						@click="validate"
+					>
+						Start
+					</v-btn>
+
+					<v-btn
+						:disabled="item.status !== 'online'"
+						color="secondary"
+						small
+						@click="validate"
+					>
+						Restart
+					</v-btn>
+
+					<v-btn
+						:disabled="item.status !== 'online'"
+						color="red"
+						small
+						@click="validate"
+					>
+						Stop
+					</v-btn>
+					<br /><br />
+				</td>
 			</template>
 		</v-data-table>
 	</v-row>
@@ -37,8 +78,16 @@ export default {
 	data() {
 		return {
 			search: '',
+			expanded: [],
+			validate: () => {
+				console.log('E');
+			},
 		};
 	},
+	mounted() {
+		this.$load.done();
+	},
+	methods: {},
 	computed: {
 		headers() {
 			return [
