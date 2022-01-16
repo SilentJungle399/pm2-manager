@@ -5,6 +5,7 @@ const io = require('socket.io')(server, {
 });
 const pm2 = require('pm2');
 const ms = require('ms');
+const fs = require('fs');
 const port = 5100;
 const passw = 'something';
 const errLs = {};
@@ -44,7 +45,10 @@ function refresh(socket) {
 			return {
 				name: process.name,
 				id: process.pm_id,
-				uptime: ms(Date.now() - process.pm2_env.pm_uptime),
+				uptime:
+					process.pm2_env.status === 'online'
+						? ms(Date.now() - process.pm2_env.pm_uptime)
+						: 0,
 				status: process.pm2_env.status,
 				cpu: process.monit.cpu + '%',
 				mem: (process.monit.memory / 1024 ** 2).toFixed(1) + 'mb',
@@ -74,13 +78,59 @@ io.on('connection', (socket) => {
 	});
 	socket.on('createErrLs', (data) => {
 		errLs[socket.id] = data.id;
+		pm2.describe(parseInt(data.id), (err, process) => {
+			if (err) {
+				console.error(err);
+			}
+			fs.readFile(
+				process[0].pm2_env.pm_err_log_path,
+				'utf8',
+				(err, data) => {
+					if (err) {
+						console.error(err);
+					}
+					const lines = data.split('\n').slice(-100);
+					socket.emit('addErr', lines.join('\n'));
+				}
+			);
+		});
 	});
 	socket.on('createLogLs', (data) => {
 		logLs[socket.id] = data.id;
+		pm2.describe(parseInt(data.id), (err, process) => {
+			if (err) {
+				console.error(err);
+			}
+			fs.readFile(
+				process[0].pm2_env.pm_out_log_path,
+				'utf8',
+				(err, data) => {
+					if (err) {
+						console.error(err);
+					}
+					const lines = data.split('\n').slice(-100);
+					socket.emit('addLog', lines.join('\n'));
+				}
+			);
+		});
 	});
 	socket.on('disconnect', () => {
 		delete errLs[socket.id];
 		delete logLs[socket.id];
+	});
+	socket.on('restart', (data) => {
+		pm2.restart(parseInt(data), (err) => {
+			if (err) {
+				console.error(err);
+			}
+		});
+	});
+	socket.on('stop', (data) => {
+		pm2.stop(parseInt(data), (err) => {
+			if (err) {
+				console.error(err);
+			}
+		});
 	});
 });
 

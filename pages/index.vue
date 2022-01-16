@@ -6,11 +6,11 @@
 				width: -webkit-fill-available;
 				margin-left: 5vw;
 				margin-right: 5vw;
+				box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 			"
 			:headers="headers"
 			:items="$store.state.processes"
 			item-key="id"
-			class="elevation-1"
 			:loading="
 				$store.state.processes
 					? $store.state.processes.length === 0
@@ -37,35 +37,53 @@
 			</template>
 			<template v-slot:expanded-item="{ headers, item }">
 				<td :colspan="headers.length">
-					<br />
+					<v-row no-gutters style="padding: 10px 5vh 0; width: 600px">
+						<v-col style="flex-grow: 0">
+							<v-btn
+								style="width: 80px; margin: 5px"
+								color="primary"
+								small
+								@click="$socket.emit('restart', item.id)"
+							>
+								{{
+									item.status !== 'online'
+										? 'Start'
+										: 'Restart'
+								}}
+							</v-btn>
 
-					<v-btn
-						:disabled="item.status === 'online'"
-						color="primary"
-						small
-						@click="validate"
-					>
-						Start
-					</v-btn>
+							<v-btn
+								style="width: 80px; margin: 5px"
+								:disabled="item.status !== 'online'"
+								color="red"
+								small
+								@click="$socket.emit('stop', item.id)"
+							>
+								Stop
+							</v-btn>
+						</v-col>
+					</v-row>
+					<v-row no-gutters style="padding: 0 5vh 10px; width: 600px">
+						<v-col style="flex-grow: 0">
+							<v-btn
+								style="width: 80px; margin: 5px"
+								color="primary"
+								small
+								:to="'/logs/' + item.id"
+							>
+								Logs
+							</v-btn>
 
-					<v-btn
-						:disabled="item.status !== 'online'"
-						color="secondary"
-						small
-						@click="validate"
-					>
-						Restart
-					</v-btn>
-
-					<v-btn
-						:disabled="item.status !== 'online'"
-						color="red"
-						small
-						@click="validate"
-					>
-						Stop
-					</v-btn>
-					<br /><br />
+							<v-btn
+								style="width: 80px; margin: 5px"
+								color="red"
+								small
+								:to="'/errors/' + item.id"
+							>
+								Errors
+							</v-btn>
+						</v-col>
+					</v-row>
 				</td>
 			</template>
 		</v-data-table>

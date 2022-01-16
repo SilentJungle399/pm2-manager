@@ -1,5 +1,9 @@
 <template>
-	<div class="textContainer grey darken-4" v-html="retLogs"></div>
+	<div
+		ref="logCont"
+		class="textContainer grey darken-4"
+		v-html="retLogs"
+	></div>
 </template>
 
 <script>
@@ -47,6 +51,16 @@ export default {
 			return this.logs.length > 0
 				? this.logs.replace(/\n/gi, '<br>').replace(/ /gi, '&nbsp;')
 				: 'No logs found.';
+		},
+	},
+	watch: {
+		logs() {
+			setTimeout(() => {
+				this.$refs.logCont.scroll({
+					top: 10000000,
+					behavior: 'smooth',
+				});
+			}, 500);
 		},
 	},
 };
