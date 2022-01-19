@@ -11,6 +11,7 @@ export default {
 	data() {
 		return {
 			logs: '',
+			first: true,
 		};
 	},
 	mounted() {
@@ -48,7 +49,7 @@ export default {
 	},
 	computed: {
 		retLogs() {
-			return this.logs.length > 0
+			return this.logs.trim().length > 0
 				? this.logs.replace(/\n/gi, '<br>').replace(/ /gi, '&nbsp;')
 				: 'No logs found.';
 		},
@@ -56,10 +57,18 @@ export default {
 	watch: {
 		logs() {
 			setTimeout(() => {
-				this.$refs.logCont.scroll({
-					top: 10000000,
-					behavior: 'smooth',
-				});
+				if (
+					this.$refs.logCont.scrollHeight -
+						this.$refs.logCont.scrollTop <
+						1000 ||
+					this.first
+				) {
+					this.$refs.logCont.scroll({
+						top: 10000000,
+						behavior: 'smooth',
+					});
+					this.first = false;
+				}
 			}, 500);
 		},
 	},

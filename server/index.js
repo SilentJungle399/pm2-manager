@@ -52,7 +52,6 @@ function refresh(socket) {
 				status: process.pm2_env.status,
 				cpu: process.monit.cpu + '%',
 				mem: (process.monit.memory / 1024 ** 2).toFixed(1) + 'mb',
-				user: process.pm2_env.username,
 			};
 		});
 		socket.emit('initProcesses', ret);

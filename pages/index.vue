@@ -18,7 +18,6 @@
 			"
 			loading-text="Loading... Please wait"
 			:search="search"
-			disable-sort
 			single-expand
 			:expanded.sync="expanded"
 			@click:row="
@@ -51,7 +50,9 @@
 										: 'Restart'
 								}}
 							</v-btn>
+						</v-col>
 
+						<v-col style="flex-grow: 0">
 							<v-btn
 								style="width: 80px; margin: 5px"
 								:disabled="item.status !== 'online'"
@@ -73,7 +74,9 @@
 							>
 								Logs
 							</v-btn>
+						</v-col>
 
+						<v-col style="flex-grow: 0">
 							<v-btn
 								style="width: 80px; margin: 5px"
 								color="red"
@@ -150,11 +153,6 @@ export default {
 							? 1
 							: -1;
 					},
-				},
-				{
-					text: 'User',
-					value: 'user',
-					sortable: false,
 				},
 			];
 		},
