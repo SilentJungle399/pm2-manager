@@ -5,7 +5,7 @@ import io from 'socket.io-client';
 export default function () {
 	Vue.use(
 		new VueSocketIO({
-			connection: io('http://localhost:5100', {
+			connection: io('/', {
 				reconnection: true,
 				reconnectionDelay: 500,
 			}),

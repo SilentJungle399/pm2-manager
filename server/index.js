@@ -1,15 +1,14 @@
 const app = require('express')();
 const server = require('http').createServer(app);
-const io = require('socket.io')(server, {
-	cors: true,
-});
+const io = require('socket.io')(server);
 const pm2 = require('pm2');
 const ms = require('ms');
 const fs = require('fs');
 const port = 5100;
-const passw = 'something';
+const passw = 'silentvpanelps';
 const errLs = {};
 const logLs = {};
+const intervals = {};
 
 pm2.connect((err) => {
 	if (err) {
@@ -63,17 +62,37 @@ io.on('connection', (socket) => {
 	socket.on('auth', (data) => {
 		if (data === passw) {
 			socket.emit('authRet', true);
-			const interval = setInterval(() => {
-				try {
-					refresh(socket);
-				} catch (e) {
-					console.error(e);
-					clearInterval(interval);
-				}
-			}, 5000);
+			if (!intervals[socket.id]) {
+				intervals[socket.id] = setInterval(() => {
+					try {
+						refresh(socket);
+					} catch (e) {
+						console.error(e);
+						clearInterval(intervals[socket.id]);
+					}
+				}, 5000);
+			}
 		} else {
 			socket.emit('authRet', false);
 		}
+	});
+	socket.on('getProcess', (data) => {
+		pm2.describe(data, (err, process) => {
+			if (err) console.error(err);
+			if (process.length === 0) return;
+
+			socket.emit('getProcessRet', {
+				name: process[0].name,
+				id: process[0].pm_id,
+				uptime:
+					process[0].pm2_env.status === 'online'
+						? ms(Date.now() - process[0].pm2_env.pm_uptime)
+						: 0,
+				status: process[0].pm2_env.status,
+				cpu: process[0].monit.cpu.toFixed(1),
+				mem: (process[0].monit.memory / 1024 ** 2).toFixed(1),
+			});
+		});
 	});
 	socket.on('createErrLs', (data) => {
 		errLs[socket.id] = data.id;
@@ -116,6 +135,7 @@ io.on('connection', (socket) => {
 	socket.on('disconnect', () => {
 		delete errLs[socket.id];
 		delete logLs[socket.id];
+		delete intervals[socket.id];
 	});
 	socket.on('restart', (data) => {
 		pm2.restart(parseInt(data), (err) => {

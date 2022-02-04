@@ -20,12 +20,7 @@
 			:search="search"
 			single-expand
 			:expanded.sync="expanded"
-			@click:row="
-				(data) =>
-					expanded.length === 1 && expanded[0].id === data.id
-						? (expanded = [])
-						: (expanded = [data])
-			"
+			@click:row="(data) => $router.push(`/process/${data.id}`)"
 		>
 			<template v-slot:top>
 				<v-text-field
@@ -34,61 +29,11 @@
 					class="mx-4"
 				></v-text-field>
 			</template>
-			<template v-slot:expanded-item="{ headers, item }">
+			<!-- <template v-slot:expanded-item="{ headers, item }">
 				<td :colspan="headers.length">
-					<v-row no-gutters style="padding: 10px 5vh 0; width: 600px">
-						<v-col style="flex-grow: 0">
-							<v-btn
-								style="width: 80px; margin: 5px"
-								color="primary"
-								small
-								@click="$socket.emit('restart', item.id)"
-							>
-								{{
-									item.status !== 'online'
-										? 'Start'
-										: 'Restart'
-								}}
-							</v-btn>
-						</v-col>
-
-						<v-col style="flex-grow: 0">
-							<v-btn
-								style="width: 80px; margin: 5px"
-								:disabled="item.status !== 'online'"
-								color="red"
-								small
-								@click="$socket.emit('stop', item.id)"
-							>
-								Stop
-							</v-btn>
-						</v-col>
-					</v-row>
-					<v-row no-gutters style="padding: 0 5vh 10px; width: 600px">
-						<v-col style="flex-grow: 0">
-							<v-btn
-								style="width: 80px; margin: 5px"
-								color="primary"
-								small
-								:to="'/logs/' + item.id"
-							>
-								Logs
-							</v-btn>
-						</v-col>
-
-						<v-col style="flex-grow: 0">
-							<v-btn
-								style="width: 80px; margin: 5px"
-								color="red"
-								small
-								:to="'/errors/' + item.id"
-							>
-								Errors
-							</v-btn>
-						</v-col>
-					</v-row>
+					
 				</td>
-			</template>
+			</template> -->
 		</v-data-table>
 	</v-row>
 </template>

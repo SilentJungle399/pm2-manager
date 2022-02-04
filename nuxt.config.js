@@ -1,7 +1,11 @@
+// const colors = require('vuetify/es5/util/colors').default;
+
+// module.exports = {
 import colors from 'vuetify/es5/util/colors';
 
 export default {
 	// Global page headers: https://go.nuxtjs.dev/config-head
+	target: 'static',
 	telemetry: false,
 	head: {
 		title: 'PM2 Manager',
@@ -25,26 +29,17 @@ export default {
 		],
 	},
 
-	// Global CSS: https://go.nuxtjs.dev/config-css
-	css: [],
-
 	// Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
 	plugins: [
 		{ src: 'plugins/socket.client.js' },
 		{ src: 'plugins/progress.js' },
 	],
 
-	// Auto import components: https://go.nuxtjs.dev/config-components
-	components: true,
-
 	// Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
 	buildModules: [
 		// https://go.nuxtjs.dev/vuetify
 		'@nuxtjs/vuetify',
 	],
-
-	// Modules: https://go.nuxtjs.dev/config-modules
-	modules: [],
 
 	// Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
 	vuetify: {
@@ -64,7 +59,4 @@ export default {
 			},
 		},
 	},
-
-	// Build Configuration: https://go.nuxtjs.dev/config-build
-	build: {},
 };

@@ -20,4 +20,7 @@ export const mutations = {
 		state.snackbar.state = data.state;
 		state.snackbar.text = data.text;
 	},
+	getProcess(state, id) {
+		return state.processes.find(process => process.pm2_env.pm_id === id);
+	},
 };
